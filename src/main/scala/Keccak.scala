@@ -15,7 +15,7 @@ object Keccak extends App {
   val LONG_SIZE = 64
 
   def rotation(l : Long, bit : Int) : Long = {
-    (l << bit) | (l >> (LONG_SIZE - bit))
+    (l << bit) | (l >>> (LONG_SIZE - bit))
   }
 
   val RC = Array[Long](
@@ -59,6 +59,7 @@ object Keccak extends App {
 
     val c = genArray1d()
     ind.foreach(x => c(x) = ar(x).reduce(_ ^ _))
+//    ind.foreach(x => c(x) = ar(x)(0) ^ ar(x)(1) ^ ar(x)(2) ^ ar(x)(3) ^ ar(x)(4))
 
     val d = genArray1d()
     ind.foreach(x => d(x) = c((x + 4) % 5) ^ rotation(c((x + 1) % 5), 1))
@@ -125,17 +126,21 @@ object Keccak extends App {
 
   def align16(s : String) : String = "0" * (16 - s.size) + s
 
-  def print(a : LLArray) {
+  def transpose(a : LLArray) : LLArray = {
     val b = genArray2d()
     for (x <-ind; y<-ind) {
       b(x)(y) = a(y)(x)
     }
+    b
+  }
+
+  def print(a : LLArray) {
     for (x <- ind) {
-      println(b(x).map(x => align16(x.toHexString).toUpperCase).mkString(" "))
+      println(transpose(a)(x).map(x => align16(x.toHexString).toUpperCase).mkString(" "))
     }
 
   }
-  0.to(3).foldLeft(testInput){
+  val rs = 0.to(3).foldLeft(testInput){
     case (ar, iterNo) =>
       println()
       println(s"--- Round $iterNo ---")
@@ -145,4 +150,5 @@ object Keccak extends App {
 //      println()
       res
   }
+
 }
